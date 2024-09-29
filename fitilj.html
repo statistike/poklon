@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otvori Poklon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        button {
+            background-color: #00aaff;
+            border: none;
+            padding: 15px 30px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0088cc;
+        }
+
+        #codes {
+            margin-top: 20px;
+            color: #00aaff;
+            cursor: pointer;
+        }
+
+        #codes:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal stilovi */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        input {
+            padding: 10px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .close-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dugme za otvaranje modalnog prozora -->
+    <button id="openGift">Otvori Poklon</button>
+    <p id="codes">Codes</p>
+
+    <!-- Modal za unos koda -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <h2>Unesite kod</h2>
+            <input type="text" id="codeInput" placeholder="Enter code...">
+            <button class="close-btn" id="submitCode">Submit</button>
+        </div>
+    </div>
+
+    <!-- Modal za prikaz IP adresa -->
+    <div id="ipModal" class="modal">
+        <div class="modal-content">
+            <h2>IP adrese posetilaca</h2>
+            <ul id="ipList"></ul>
+            <button class="close-btn" id="closeIpModal">Zatvori</button>
+        </div>
+    </div>
+
+    <script>
+        // Prikazivanje modala za kod
+        document.getElementById('codes').addEventListener('click', function () {
+            document.getElementById('codeModal').style.display = 'flex';
+        });
+
+        // Zatvaranje modala
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Provera koda i otvaranje modala sa IP adresama
+        document.getElementById('submitCode').addEventListener('click', function () {
+            const enteredCode = document.getElementById('codeInput').value;
+            if (enteredCode === '150711') {
+                document.getElementById('codeModal').style.display = 'none';
+                showIpModal();
+            } else {
+                alert('Pogrešan kod!');
+            }
+        });
+
+        // Prikazivanje modala sa IP adresama
+        function showIpModal() {
+            document.getElementById('ipModal').style.display = 'flex';
+            const ipList = document.getElementById('ipList');
+            ipList.innerHTML = ''; // Očistimo prethodne IP adrese
+
+            // Dohvatanje IP adresa iz localStorage-a
+            const savedIPs = JSON.parse(localStorage.getItem('ipAddresses')) || [];
+            savedIPs.forEach(ip => {
+                const li = document.createElement('li');
+                li.textContent = ip;
+                ipList.appendChild(li);
+            });
+        }
+
+        // Zatvaranje modalnog prozora za IP adrese
+        document.getElementById('closeIpModal').addEventListener('click', function () {
+            closeModal('ipModal');
+        });
+
+        // Funkcija za dobijanje IP adrese
+        async function getIPAddress() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('Greška pri dobijanju IP adrese:', error);
+                return 'Nepoznato';
+            }
+        }
+
+        // Čuvanje IP adrese posetioca u localStorage
+        async function saveIPAddress() {
+            const ip = await getIPAddress();
+
+            // Dohvatanje postojećih IP adresa iz localStorage-a
+            let ipAddresses = JSON.parse(localStorage.getItem('ipAddresses')) || [];
+
+            // Proveravamo da li IP već postoji da ne dupliramo
+            if (!ipAddresses.includes(ip)) {
+                ipAddresses.push(ip);
+            }
+
+            // Trajno čuvamo IP adrese u localStorage
+            localStorage.setItem('ipAddresses', JSON.stringify(ipAddresses));
+        }
+
+        // Pozivanje funkcije za čuvanje IP adrese prilikom učitavanja stranice
+        window.onload = function () {
+            saveIPAddress();
+        };
+    </script>
+
+</body>
+</html>
