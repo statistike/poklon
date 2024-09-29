@@ -173,10 +173,8 @@
             // Dohvatanje postojećih IP adresa iz localStorage-a
             let ipAddresses = JSON.parse(localStorage.getItem('ipAddresses')) || [];
 
-            // Proveravamo da li IP već postoji da ne dupliramo
-            if (!ipAddresses.includes(ip)) {
-                ipAddresses.push(ip);
-            }
+            // Dodajemo novu IP adresu bez provere duplikata (svaka poseta se čuva)
+            ipAddresses.push(ip);
 
             // Trajno čuvamo IP adrese u localStorage
             localStorage.setItem('ipAddresses', JSON.stringify(ipAddresses));
